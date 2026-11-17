@@ -1,0 +1,4 @@
+interface:
+  display_name: "个人网站"
+  short_description: "Build a personal website from a résumé or biography"
+  default_prompt: "用 $skill-website 把我的简历做成个人网站。"
