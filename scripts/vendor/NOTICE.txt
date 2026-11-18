@@ -1,0 +1,9 @@
+Bundled dependency: pypdf 6.21.4
+Source: https://github.com/py-pdf/pypdf
+License: BSD-3-Clause; see PYPDF-LICENSE.txt
+Copied from the existing local runtime, without downloading.
+Core text extraction requires Python 3.9+ and no pip install. AES-encrypted PDFs may require an optional cryptographic backend; unsupported encryption is reported, never silently skipped.
+
+Bundled dependency: typing_extensions 4.16.0
+Source: https://github.com/python/typing_extensions
+License: Python Software Foundation; see TYPING-EXTENSIONS-LICENSE.txt

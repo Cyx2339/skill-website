@@ -7,7 +7,7 @@
 | `name`、`headline` | 展示用姓名及职位或定位。首页以姓名为主标题。 |
 | `language` | 语言标签，默认 `zh-CN`。内置中文和英文标签，其余语言可覆盖。 |
 | `intro` | 一段介绍，或由多段文字组成的数组。 |
-| `portrait` | 可选首屏图片对象 `{"file":"photo.jpg","alt":"照片内容"}`。 |
+| `portrait` | 可选本人照片对象（默认显示于左上角头像，点击查看完整图） `{"file":"photo.jpg","alt":"照片内容"}`。 |
 | `strengths` | 个人优势数组，各项含 `title` 和 `summary`。从原资料提取标题及经历证据。 |
 | `metrics` | 可选数组，元素为 `{"value":"3 年+","label":"软件开发经验"}`。仍可读取旧数据并以短列表展示。新站优先将数字写在对应的介绍或经历里。 |
 | `projects` | 按网站重点排序，首项作为主案例。结构见下。 |
@@ -63,3 +63,16 @@ python3 /path/to/skill-website/scripts/render_site.py /path/to/site-data.json /p
 默认模板可离线打开。含主案例步骤图时生成少量原生 JS 处理单次淡入，关闭 JS 时内容直接呈现。检查首页和案例页在桌面与手机上的排版、页内滚动、返回链接和减少动态效果。若用户要求打包网站，打包生成的站点目录。
 
 统一字号与间距、背景克制和尊重减少动态效果等做法参考 [Elaya 网页设计规则](https://github.com/elayadesign/ai-design-skills/blob/main/skills/landing-page-design/SKILL.md#part-b--visual-system)。
+
+
+## 本人照片、首屏图片与视觉方向
+
+图片字段均为本地文件，渲染时复制到网站内部；原件不变。常用可选字段：`position: [50, 35]` 指定缩略图的横纵焦点百分比，`caption` 展示图片说明，`credit` 与 `source_url` 展示来源署名。个人主页的氛围图默认省略这三个展示字段，来源只存入 `work/` 素材清单；仅在用户要求、有意义的作品图注或必须公开署名时填写。不要把选图工具返回的来源字段直接带入页面。`alt` 按实际内容填写。完整照片弹窗不裁切。
+
+- `portrait`：本人照片，不接收未知身份的图库人物。默认左上角圆形头像。
+- `portrait_placement`：`header`（默认）、`hero` 或 `both`。
+- `hero_image`：独立首屏图，可为已选定的相关氛围图；不会覆盖导航头像。
+- `design.theme`：`base` 或 `editorial`。前者是基础结构，后者为可选图文方向，不是所有网站的新默认。其他风格用定制样式/模板落实。
+- `design.eyebrow`：可选首屏辅助文字，必须有明确用途，不自动加入装饰性英文。
+
+以 `site_workflow.py build` 管理正式版本；直接调用 `render_site.py` 仍兼容，用于临时预览或其他工作流。标准目录和交付步骤见 [输出规则](output-workflow.md)。

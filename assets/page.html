@@ -8,16 +8,17 @@
   <link rel="stylesheet" href="site.css">
   $custom_style$script
 </head>
-<body>
+<body data-theme="$theme">
   <a class="skip" href="#main">$skip</a>
   <header class="site-header" id="top">
     <div class="shell header-inner">
-      $home_link
+      <div class="header-brand">$avatar$home_link</div>
       $navigation
     </div>
   </header>
 
   $main
+  $portrait_dialog
 
   <footer class="shell site-footer">
     $footer_links

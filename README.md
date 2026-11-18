@@ -52,6 +52,29 @@ npx skills add ./skill-website
 
 Codex 可以用 `$skill-website` 点名，Claude Code 可以用 `/skill-website`，DeepSeek Harness 可以在对话中点名使用 `skill-website`。
 
-默认生成脚本使用 Python 3 标准库。PDF 文本提取和扫描件识别取决于客户端可用的工具。生成的静态网站可直接在浏览器打开 `index.html` 预览。
+文档工具需要 Python 3.9+，已打包 PDF 解析器，无需在使用时下载或安装解析库。支持 Markdown、TXT、DOCX 和文字型 PDF；Apple Silicon、macOS 14+ 随包提供离线扫描 PDF 识别程序，实际能力以 `doctor` 检查为准。其他平台可读取文字文档，但扫描件需要已有的兼容识别能力。旧版 `.doc` 暂不支持。
+
+读取时保留原文、页码或段落位置，并报告未读内容。内容整理会输出分类底稿、数字及贡献描述候选、来源引用和覆盖核对清单。助手完成语义核对后才把内容映射到网站，不会自动把底稿当成发布稿。
+
+- [文档工具：支持格式、调用方式与读取限制](references/document-tools.md)
+- [内容整理：来源追溯、核对流程与文件格式](references/content-preparation.md)
+
+这两个模块可通过 `scripts/document_tools.py` 独立调用，也可以跟随网站技能一起使用。生成网站仍由原有 `scripts/render_site.py` 负责，静态网站可直接在浏览器打开 `index.html` 预览。
 
 [查看 Skill 文件](https://github.com/Cyx2339/skill-website/blob/main/SKILL.md)
+
+
+## 图片、设计与输出管理
+
+新增 `media_tools.py`：提取 PDF / DOCX 图片、盘点本地素材、记录选图依据与角色。本人照片默认作为左上角圆形头像，可悬浮预览、点击完整查看；手机支持点击，弹窗支持 Escape 和焦点恢复。首屏氛围图与头像分开配置。
+
+新增 `site_workflow.py`：按北京时间创建 `output/websites/站点名称/日期时间-vNN/`，将底稿、网站和检查分开，交付时只打包网站。用户指定根目录优先，已有版本不覆盖。
+
+设计参考库整理了摄影杂志、温暖插画、东方艺术和自然摄影四种方向。根据人物和内容选取，不把同一配色或布局套给所有人。附带参考截图供本地视觉研究，不作为用户作品放入网站；使用与分享原设计需遵循来源授权。
+
+- [图片与头像处理](references/media-selection.md)
+- [输出目录与交付](references/output-workflow.md)
+- [视觉方向与案例](references/visual-direction.md)
+- [设计验收](references/design-review.md)
+
+离线核心仍只需要 Python 3.9+ 和随包解析库。图库搜索/API/MCP 可选，没有连接也能使用本地资料，不在网站里存放 API Key。

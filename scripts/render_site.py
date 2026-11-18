@@ -119,6 +119,12 @@ class Site:
         self.source_dir = source_dir
         self.destination = destination
         self.styles = styles
+        self.design = data.get('design', {})
+        self.theme = self.design.get('theme', 'base')
+        if self.theme not in ('base','editorial'):raise ValueError('Unknown design theme; use base with custom CSS for another direction')
+        self.portrait = data.get('portrait')
+        self.portrait_placement = data.get('portrait_placement','header')
+        if self.portrait_placement not in ('header','hero','both'):raise ValueError('Unknown portrait placement')
         self.images = {}
         self.name = data["name"].strip()
         if not self.name:
@@ -161,16 +167,37 @@ class Site:
         if source not in self.images:
             self.images[source] = self.copy_media(file, IMAGE_TYPES, f"image-{len(self.images) + 1}")
         loading = "" if eager else ' loading="lazy"'
-        image = f'<img src="{self.images[source]}" alt="{text(media.get("alt", ""))}"{loading}>'
+        position=media.get('position',[50,50])
+        if len(position)!=2 or any(not isinstance(x,(int,float)) or not 0<=x<=100 for x in position):raise ValueError('Image position must contain two percentages')
+        image = f'<img src="{self.images[source]}" alt="{text(media.get("alt", ""))}" style="object-position:{position[0]}% {position[1]}%"{loading}>'
         caption = media.get("caption")
-        label = f"<figcaption>{text(caption)}</figcaption>" if caption else ""
+        label_content = text(caption) if caption else ""
+        if media.get('credit'):
+            credit=link(public_url(media['source_url']),media['credit']) if media.get('source_url') else text(media['credit'])
+            label_content+=f'<span class="image-credit">{credit}</span>'
+        label=f'<figcaption>{label_content}</figcaption>' if label_content else ''
         return f'<figure class="{class_name}">{image}{label}</figure>'
+
+    def avatar(self):
+        if not self.portrait or self.portrait_placement=='hero':return '', ''
+        # Use the unchanged photo for the dialog; crop only its thumbnail in CSS.
+        photo=self.figure(self.portrait,'portrait-full',eager=True)
+        source=(self.source_dir/self.portrait['file']).resolve()
+        url=self.images[source]
+        pos=self.portrait.get('position',[50,50])
+        label='查看完整照片' if self.language.startswith('zh') else 'View full portrait'
+        close='关闭' if self.language.startswith('zh') else 'Close'
+        image=f'<img src="{url}" alt="{text(self.portrait.get("alt",self.name))}" style="object-position:{pos[0]}% {pos[1]}%">'
+        trigger=f'<div class="avatar-group"><a class="portrait-trigger" href="{url}" aria-label="{label}" aria-haspopup="dialog">{image}</a><div class="portrait-peek" aria-hidden="true"><img src="{url}" alt=""></div></div>'
+        dialog=f'<dialog class="portrait-dialog" id="portrait-dialog" aria-label="{label}"><button type="button" class="portrait-close" autofocus>{close}</button>{photo}</dialog>'
+        return trigger,dialog
 
     def build(self):
         copyfile(ASSETS / "site.css", self.destination / "site.css")
         if self.styles:
             copyfile(self.styles, self.destination / "custom.css")
-        if self.animate_flow:
+        if self.theme=='editorial':copyfile(ASSETS/'editorial.css',self.destination/'theme.css')
+        if self.animate_flow or self.portrait:
             copyfile(ASSETS / "site.js", self.destination / "site.js")
 
         self.resume = self.copy_media(self.data["resume"], {".pdf"}, "public-resume") if self.data.get("resume") else ""
@@ -220,8 +247,9 @@ class Site:
         home_attrs = ' class="home-link" aria-current="page"' if is_home else ' class="home-link"'
         home_link = link("#top" if is_home else "index.html", self.labels["home"], home_attrs)
         footer_links = self.contacts() if not is_home else ""
-        custom = '<link rel="stylesheet" href="custom.css">\n  ' if self.styles else ""
-        script = '<script src="site.js" defer></script>' if is_home and self.animate_flow else ""
+        custom = ('<link rel="stylesheet" href="theme.css">\n  ' if self.theme!='base' else '')+('<link rel="stylesheet" href="custom.css">\n  ' if self.styles else '')
+        script = '<script src="site.js" defer></script>' if self.portrait or (is_home and self.animate_flow) else ""
+        avatar,portrait_dialog=self.avatar()
         title_parts = (self.name, self.headline) if is_home else (page_title, self.name)
         title = " · ".join(dict.fromkeys(filter(None, title_parts)))
         rendered = self.template.substitute(
@@ -229,6 +257,7 @@ class Site:
             home_link=home_link, top_link=text_link("#top", self.labels["top"], "↑", "top-link"),
             skip=text(self.labels["skip"]), navigation=navigation,
             main=main, footer_links=footer_links, custom_style=custom, script=script,
+            avatar=avatar,portrait_dialog=portrait_dialog,theme=text(self.theme),
         )
         (self.destination / filename).write_text(rendered, encoding="utf-8")
 
@@ -236,9 +265,11 @@ class Site:
         return '<div class="contact-links">' + "".join(self.contact_links) + "</div>" if self.contact_links else ""
 
     def hero(self):
-        portrait = self.figure(self.data.get("portrait"), "hero-image", eager=True)
+        hero_media=self.data.get('hero_image') or (self.portrait if self.portrait_placement in ('hero','both') else None)
+        portrait = self.figure(hero_media, "hero-image", eager=True)
         role = f'<p class="role">{text(self.headline)}</p>' if self.headline and self.headline != self.name else ""
-        identity = f'<div><h1 id="name">{text(self.name)}</h1>{role}</div>'
+        eyebrow=f'<p class="eyebrow">{text(self.design["eyebrow"])}</p>' if self.design.get('eyebrow') else ''
+        identity = f'<div>{eyebrow}<h1 id="name">{text(self.name)}</h1>{role}</div>'
         intro = paragraphs(self.data.get("intro"))
         action_key = next(iter(self.nav_items), "")
         action = ""
