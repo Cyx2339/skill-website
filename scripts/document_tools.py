@@ -11,7 +11,7 @@ import subprocess
 import sys
 import tempfile
 
-from document_io import extract_one, ocr_binary
+from document_io import extract_one, ocr_binary, ocr_candidate
 from content_organizer import organize, outline_markdown, validate_review
 
 
@@ -19,13 +19,16 @@ def dump(path, value):
     path.write_text(json.dumps(value,ensure_ascii=False,indent=2)+'\n',encoding='utf-8')
 
 
-def doctor():
+def capabilities():
     try:
         import pypdf
         pdf={'available':True,'version':pypdf.__version__,'module':str(Path(pypdf.__file__).resolve())}
     except Exception as e:
         pdf={'available':False,'error':str(e)}
     ocr={'available':False,'reason':'No matching local OCR helper; scanned pages will be reported as unresolved.'}
+    candidate=ocr_candidate()
+    if candidate and candidate.is_file() and not os.access(candidate,os.X_OK):
+        ocr.update(code='not_executable',binary=str(candidate),reason='Bundled helper exists but has no execute permission. Run skill_setup.py --repair-ocr-mode once after verifying this trusted installation.')
     binary=ocr_binary()
     if binary:
         try:
@@ -38,6 +41,11 @@ def doctor():
             'formats':{'markdown':True,'txt':True,'docx':True,'pdf_text':pdf['available'],'legacy_doc':False},
             'pdf_parser':pdf,'offline_ocr':ocr,
             'network_required':False,'automatic_install':False}
+    return result
+
+
+def doctor():
+    result=capabilities()
     print(json.dumps(result,ensure_ascii=False,indent=2))
     return 0 if result['core_ready'] else 2
 

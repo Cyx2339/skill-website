@@ -11,12 +11,12 @@
 | `strengths` | 个人优势数组，各项含 `title` 和 `summary`。从原资料提取标题及经历证据。 |
 | `metrics` | 可选数组，元素为 `{"value":"3 年+","label":"软件开发经验"}`。仍可读取旧数据并以短列表展示。新站优先将数字写在对应的介绍或经历里。 |
 | `projects` | 按网站重点排序，首项作为主案例。结构见下。 |
-| `section_order` | 可选数组，调整区块顺序。支持 `projects`、`strengths`、`experience`、`skills`、`education`、`contact`。例如 `["experience", "projects"]` 把经历提到作品前。 |
-| `experience`、`education` | 各项用 `title`、`subtitle`、`period`、`location`、`summary`。 |
+| `section_order` | 可选数组，调整区块顺序。支持 `projects`、`strengths`、`experience`、`skills`、`education`、`honors`、`contact`。例如 `["experience", "projects"]` 把经历提到作品前。 |
+| `experience`、`education`、`honors` | 各项用 `title`、`subtitle`、`period`、`location`、`summary`。 |
 | `skill_groups`、`skills` | 可用分组数组展示技能，每组含 `title` 和 `summary`。短列表可沿用 `skills` 字符串数组。 |
 | `links` | 各项为 `{"label":"GitHub","url":"https://github.com/example"}`。接受 http、https、mailto、tel。 |
 | `resume` | 用户明确同意公开的 PDF 本地路径。 |
-| `labels` | 支持覆盖导航及区块用语。键包括 `home`、`nav`、`top`、`projects`、`strengths`、`experience`、`education`、`skills`、`contact`、`view_projects`、`featured_detail`、`row_detail`、`detail`、`status`、`flow`、`back`、`skip`、`resume`。 |
+| `labels` | 支持覆盖导航及区块用语。键包括 `home`、`nav`、`top`、`projects`、`strengths`、`experience`、`education`、`honors`、`skills`、`contact`、`view_projects`、`featured_detail`、`row_detail`、`detail`、`status`、`flow`、`back`、`skip`、`resume`。 |
 
 项目用 `title`、`summary`，以及可选的 `id`、`role`、`period`、`tags` 字符串数组、`cover` 图片对象、`status` 和 `url`。简述使用单段文字。`url` 可链接到用户允许公开的外部作品。`id` 使用小写英文、数字和连字符，可生成稳定的详情路径。
 
@@ -76,3 +76,17 @@ python3 /path/to/skill-website/scripts/render_site.py /path/to/site-data.json /p
 - `design.eyebrow`：可选首屏辅助文字，必须有明确用途，不自动加入装饰性英文。
 
 以 `site_workflow.py build` 管理正式版本；直接调用 `render_site.py` 仍兼容，用于临时预览或其他工作流。标准目录和交付步骤见 [输出规则](output-workflow.md)。
+
+## 按需调整组件
+
+先改字段、区块顺序与custom.css。荣誉放在honors数组，每条保留名称、时间与原文支持的说明，不压成一句总数；教育、技能、荣誉有内容时均可导航到对应区块。
+
+| 需求 | 现有入口 |
+| --- | --- |
+| 首屏图文布局 | `.hero`、`.hero-intro`、`.hero-image`；新结构才查看Site.hero |
+| 主案例与其他项目 | `.featured-project`、`.featured-copy`、`.project-row`；新结构查看Site.project |
+| 经历、教育、荣誉 | `.fact-row`、`.entry-summary`；字段已支持，无需重写生成器 |
+| 头像与完整照片 | `.portrait-trigger`、`.portrait-dialog`；复用现有site.js键盘与焦点处理 |
+| 项目详情 | `.detail-block`；新结构查看Site.detail |
+
+全新结构可在本次work/里写定制渲染入口、复用或继承Site对应方法；不要直接改已安装技能。自定义输出同样需要内容核对与交付检查，不能以统一模板限制设计。

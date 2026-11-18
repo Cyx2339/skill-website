@@ -4,7 +4,7 @@
 
 ## 从文档找到图片
 
-在每次创建的网站版本目录内运行，不改原文件：
+prepare已为PDF/DOCX生成图片清单，不再重复运行。需要补充独立图片或单独排查时，在新目录运行，不改原文件：
 
 ```sh
 python3 -S /path/to/skill-website/scripts/media_tools.py inventory /path/to/resume.pdf /path/to/materials.docx /path/to/photo.jpg --out /absolute/run/work/media
@@ -45,3 +45,7 @@ python3 -S /path/to/skill-website/scripts/media_tools.py select /absolute/run/wo
 搜索前先确定用途、横竖比例、主体位置和色调；查看候选实际画面后再选用。同一页面的图片应有一致的色调或明确的叙事联系。外部图片在清单中注明 `source_url`、`credit`、`usage_basis`，必要署名进入页面，私有来源路径留在 `work/`。
 
 如果用户要求接入 API/MCP，先检查当时的官方申请条件与使用要求，提供可替换的数据来源层。图库不可用时回到本地素材，不中断内容整理。Unsplash API 图片链接、署名和下载统计有专门要求，不能一概按“下载到离线包”处理；Pexels 等也应以当时官方规则为准。连接和密钥配置属于单独的环境准备，不在每次建站时重复安装。
+
+## 看图能力受限时
+
+若工具返回Unsupported，仅用一张已知正常的参考图诊断一次；两者都失败则记录宿主图像显示不可用。不要反复转格式，也不要通过肤色像素猜人像身份或声称完成视觉验收。优先使用用户明确标注身份的独立照片；仅凭尺寸猜到的候选图不公开。身份确实影响使用且无法确定时，把问题与其他必要缺项一次汇总，文字部分继续完成。

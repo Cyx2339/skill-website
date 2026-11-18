@@ -3,16 +3,16 @@
 所有新任务先创建一个版本目录。默认位置为当前项目的 `output/websites/站点名称/北京时间日期时间-vNN/`。用户指定位置时使用 `--root` 替换默认的 `output/websites` 根目录；不要修改用户原始资料，不把成果写进技能安装目录。
 
 ```sh
-python3 -S /path/to/skill-website/scripts/site_workflow.py init --name 个人网站 --workspace /path/to/project
+python3 -S /path/to/skill-website/scripts/prepare_site.py /path/to/resume.pdf --name 个人网站 --workspace /path/to/project
 ```
 
-从输出 JSON 读取本次绝对路径，后续使用该路径，不自行猜测时间戳。
+从输出 JSON 读取本次绝对路径，后续使用该路径，不自行猜测时间戳。统一入口已初始化目录，不再运行init；只从聊天文字建站、没有文档输入时，才单独用site_workflow.py init。
 
 | 内容 | 位置 |
 | --- | --- |
 | 提取、整理、素材清单、视觉选择及网站数据 | `work/` |
 | 可公开的网站 HTML、样式、脚本、选定图片 | `site/` |
-| 实际浏览器截图与检查报告 | `review/` |
+| 实际截图、自动检查与目视记录（分别保存） | `review/` |
 | 时间、版本、状态和路径 | `run.json` |
 | 成果入口和实际验证范围 | `交付说明.md` |
 

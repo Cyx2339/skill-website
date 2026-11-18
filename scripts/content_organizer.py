@@ -3,6 +3,7 @@ import hashlib
 import re
 
 CATEGORIES = [
+    ('honors', r'荣誉|奖励|奖学金|honors?|awards?'),
     ('strengths', r'个人优势|核心优势|个人亮点|自我评价|strengths?|profile|summary'),
     ('projects', r'项目|作品|案例|projects?|portfolio|case stud'),
     ('experience', r'工作|任职|实习|经历|employment|experience|career'),

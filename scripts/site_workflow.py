@@ -88,6 +88,16 @@ def main():
     if manifest.get('schema_version')!='1.0':raise ValueError('Unknown run schema')
     site=run/'site'
     if args.command=='build':
+        bundle_file=run/'work/read/bundle.json'
+        review_file=run/'work/reviewed-content.json'
+        if bundle_file.exists():
+            if not review_file.exists():raise ValueError('Fill work/reviewed-content.json before building from prepared documents')
+            from content_organizer import validate_review
+            validation=validate_review(json.loads(bundle_file.read_text()),json.loads(review_file.read_text()))
+            save(run/'review/content-checks.json',validation)
+            if not validation['valid']:raise ValueError('Content review has invalid references/coverage; see review/content-checks.json')
+            # Flags remain visible; an automatic validator cannot replace semantic review.
+            if validation['flags']:print(json.dumps({'content_review_flags':validation['flags']},ensure_ascii=False),file=sys.stderr)
         command=[sys.executable,'-S',str(Path(__file__).with_name('render_site.py')),str(Path(args.data).resolve()),str(site)]
         if args.styles:command+=['--styles',str(Path(args.styles).resolve())]
         result=subprocess.run(command,capture_output=True,text=True)
@@ -104,13 +114,19 @@ def main():
             if path.is_file() and not path.is_symlink():z.write(path,path.relative_to(site))
     visual_file=run/'review/visual-checks.json'
     visual=json.loads(visual_file.read_text(encoding='utf-8')) if visual_file.exists() else {'status':'not_run'}
+    browser_files=list((run/'review').glob('browser*/browser-checks.json'))
+    if (run/'review/browser-checks.json').exists():browser_files.append(run/'review/browser-checks.json')
+    browser_reports=[{'file':str(p.relative_to(run)),'status':json.loads(p.read_text()).get('status','unknown')} for p in browser_files]
+    manifest['browser_reports']=browser_reports
     manifest.update(status='delivered',visual_review=visual.get('status','unknown'))
     save(run/'run.json',manifest)
     notes=['# 网站交付','',f"站点：{manifest['name']}",'',
            '- [打开首页](site/index.html)','- [网站压缩包](website.zip)','- 内容、图片选择和来源记录：work/',
-           '- [结构检查](review/structural-checks.json)',f"- 浏览器验证：{visual.get('status','not_run')}",'',
+           '- [结构检查](review/structural-checks.json)',f"- 目视验收：{visual.get('status','not_run')}",'',
            '只部署 site/ 或解压后的 website.zip；work/ 和 review/ 不属于公开网站。',
            '下一次修改创建新的版本目录，保留原始资料与本版成果。']
+    notes+=['','自动浏览器检查与目视验收分别记录；自动检查通过不代表已完成视觉目检。']
+    for browser_report in browser_reports:notes.append('- '+browser_report['file']+': '+browser_report['status'])
     if visual.get('limitations'):notes+=['','验证范围限制：',*['- '+str(x) for x in visual['limitations']]]
     (run/'交付说明.md').write_text('\n'.join(notes)+'\n',encoding='utf-8')
     print(json.dumps({'run':str(run),'index':str(site/'index.html'),'archive':str(archive),'handoff':str(run/'交付说明.md'),'visual_review':visual.get('status')},ensure_ascii=False))

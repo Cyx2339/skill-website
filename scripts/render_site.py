@@ -15,11 +15,11 @@ from urllib.parse import urlsplit
 
 ASSETS = Path(__file__).resolve().parent.parent / "assets"
 IMAGE_TYPES = {".avif", ".gif", ".jpeg", ".jpg", ".png", ".webp"}
-SECTIONS = ("projects", "strengths", "experience", "skills", "education", "contact")
+SECTIONS = ("projects", "strengths", "experience", "skills", "education", "honors", "contact")
 LABELS = {
     "zh": {
         "projects": "精选项目", "experience": "工作经历", "education": "教育经历",
-        "skills": "专业能力", "contact": "联系", "detail": "查看项目",
+        "skills": "专业能力", "honors": "荣誉奖励", "contact": "联系", "detail": "查看项目",
         "back": "返回项目", "skip": "跳到正文", "resume": "下载简历",
         "strengths": "个人优势", "home": "首页", "top": "回到顶部", "nav": "站点导航",
         "view_projects": "查看项目", "featured_detail": "查看案例", "row_detail": "查看详情",
@@ -27,7 +27,7 @@ LABELS = {
     },
     "en": {
         "projects": "Selected work", "experience": "Experience", "education": "Education",
-        "skills": "Skills", "contact": "Contact", "detail": "View project",
+        "skills": "Skills", "honors": "Honors", "contact": "Contact", "detail": "View project",
         "back": "Back to projects", "skip": "Skip to content", "resume": "Download résumé",
         "strengths": "Strengths", "home": "Home", "top": "Back to top", "nav": "Site navigation",
         "view_projects": "View selected work", "featured_detail": "View case study",
@@ -205,6 +205,9 @@ class Site:
             "projects": self.projects,
             "strengths": self.data.get("strengths"),
             "experience": self.data.get("experience"),
+            "skills": self.data.get("skill_groups") or self.data.get("skills"),
+            "education": self.data.get("education"),
+            "honors": self.data.get("honors"),
             "contact": self.contact_links,
         }
         self.nav_items = {
@@ -294,6 +297,7 @@ class Site:
             "experience": timeline(self.data.get("experience", [])),
             "skills": fact_list(self.data.get("skill_groups")) + tags(self.data.get("skills")),
             "education": timeline(self.data.get("education", [])),
+            "honors": timeline(self.data.get("honors", [])),
             "contact": self.contacts(),
         }
         sections = "\n".join(section(key, self.labels[key], blocks[key]) for key in self.section_order)

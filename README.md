@@ -78,3 +78,17 @@ Codex 可以用 `$skill-website` 点名，Claude Code 可以用 `/skill-website`
 - [设计验收](references/design-review.md)
 
 离线核心仍只需要 Python 3.9+ 和随包解析库。图库搜索/API/MCP 可选，没有连接也能使用本地资料，不在网站里存放 API Key。
+
+## r3：减少重复处理和确认
+
+默认流程为「统一准备 → 内容核对与生成 → 检查交付」。prepare_site.py一次完成能力检查、版本目录、文档读取、内容底稿和文档图片清单；各阶段有超时与日志，保留部分成功结果。build自动检查内容引用。新增荣誉区块，不因模板字段不足而省略奖项。
+
+```sh
+python3 -S /absolute/skill-website/scripts/prepare_site.py /absolute/resume.pdf --name 个人网站 --workspace /absolute/project
+```
+
+图片显示与浏览器能力分开判断；同类故障最多一次诊断及一次有依据的重试。优先使用客户端已有浏览器；备用browser_check.mjs使用现有Node 22+和Chromium，不临时安装依赖或编写检查程序，自动结果与目视验收分开保存。
+
+安装后可用skill_setup.py检查随包OCR文件完整性与执行位，缺执行位时可精确修复。详见[一次性准备与权限](references/setup-and-permissions.md)。技能不改客户端权限设置、不承诺零弹窗；已授权工作不重复询问，无关紧要的可选功能不再阻断生成。
+
+验证：`python3 -S -m unittest discover -s tests -v`；已有Node时另运行 `node --test tests/browser_check.test.mjs`。测试资料为合成内容，不带个人简历。协议测试不代替真实浏览器或视觉验收。
